@@ -1,227 +1,530 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACPC Choice Filling Predictor</title>
+    <title>ACPC Choice Filling & Merit Predictor Pro | Engineering 2025-26</title>
+    <meta name="description" content="Professional ACPC Engineering College Predictor and Choice Filling Assistant for Gujarat ACPC Admission 2025-26.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
-    <div class="container">
+    <!-- Background glowing ambient elements -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
 
-        <div class="page-header">
-            <h2>🎓 ACPC <span class="accent">Choice Filling</span> Predictor</h2>
-            <p>Find eligible institutes based on your merit rank &amp; build your priority list</p>
-        </div>
-
-        <form id="prediction-form" onsubmit="event.preventDefault();">
-
-            <div class="card">
-                <div class="card-title">① Rank Entry Mode</div>
-
-                <div class="mode-toggle">
-                    <button type="button" id="btn-know-rank" class="mode-btn active" onclick="setRankMode('manual')">I Know My Rank</button>
-                    <button type="button" id="btn-calc-pr"   class="mode-btn" onclick="setRankMode('pr')">Calculate by PR</button>
-                    <button type="button" id="btn-calc-marks" class="mode-btn" onclick="setRankMode('marks')">Calculate by Marks</button>
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="brand-logo">🎓</div>
+                <div class="brand-text">
+                    <h1>ACPC <span class="gradient-text">Predictor Pro</span></h1>
+                    <span class="badge-edition">2025-26 Edition</span>
                 </div>
-
-                <div id="manual-rank-section">
-                    <div class="form-group">
-                        <label>ACPC Merit Rank *</label>
-                        <input type="number" id="rank" placeholder="e.g. 6499" required>
-                    </div>
-                </div>
-
-                <div id="calc-pr-section" style="display:none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Board PCM Percentile (PR) *</label>
-                            <input type="number" id="pcm-pr" step="0.01" placeholder="e.g. 85.50" oninput="calculateByPR()">
-                        </div>
-                        <div class="form-group">
-                            <label>GUJCET Percentile (PR) *</label>
-                            <input type="number" id="gujcet-pr" step="0.01" placeholder="e.g. 90.20" oninput="calculateByPR()">
-                        </div>
-                    </div>
-                    <div class="rank-result-box">
-                        <span class="label">🎯 Estimated Merit Rank</span>
-                        <span class="rank-num" id="calculated-rank-display-pr">—</span>
-                    </div>
-                </div>
-
-                <div id="calc-marks-section" style="display:none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>PCM Theory Marks (Out of 300) *</label>
-                            <input type="number" id="pcm-mark" step="1" placeholder="e.g. 250" oninput="calculateByMarks()">
-                        </div>
-                        <div class="form-group">
-                            <label>GUJCET Marks (Out of 120) *</label>
-                            <input type="number" id="gujcet-mark" step="0.25" placeholder="e.g. 95" oninput="calculateByMarks()">
-                        </div>
-                    </div>
-                    <div class="rank-result-box">
-                        <span class="label">🎯 Estimated Merit Rank</span>
-                        <span class="rank-num" id="calculated-rank-display-marks">—</span>
-                        <span class="sub-info" id="pr-display-marks">Enter marks to fetch exact PR</span>
-                    </div>
-                </div>
-
-                <button id="search-btn" type="button" class="btn-primary" onclick="startLiveSearch()">
-                    🔍 Find Eligible Institutes
-                </button>
             </div>
 
-            <div class="card">
-                <div class="card-title">② Advanced Filters</div>
+            <div class="nav-actions">
+                <div class="stats-pill" title="Live Database Coverage">
+                    <span class="pulse-dot"></span>
+                    <span>127+ Colleges</span> • <span>126+ Branches</span>
+                </div>
+                <button id="theme-toggle" class="btn-theme" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+                    <span id="theme-icon">🌙</span>
+                </button>
+                <a href="#preference-section" id="nav-choice-count" class="choice-counter-btn" style="display: none;">
+                    📋 My Choices (<span id="nav-count-val">0</span>)
+                </a>
+            </div>
+        </div>
+    </header>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Category</label>
-                        <div class="multi-select-header" onclick="toggleDropdown('category-options')">
-                            Select Categories <span>▾</span>
+    <main class="main-container">
+
+        <!-- Hero Header -->
+        <section class="hero-section">
+            <div class="hero-badge">⚡ Advanced Gujarat ACPC Engineering Admissions Engine</div>
+            <h2 class="hero-title">Predict Cutoffs &amp; Build Your <span class="gradient-text">Winning Choice List</span></h2>
+            <p class="hero-subtitle">Intelligent admission probability scoring (Safe / Target / Dream), 2024 vs 2025 cutoff trend analytics, and 1-click official PDF export.</p>
+        </section>
+
+        <!-- Main Form & Rank Entry -->
+        <form id="prediction-form" onsubmit="event.preventDefault();">
+
+            <!-- STEP 1: RANK & PERCENTILE CALCULATOR -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="step-badge">STEP 1</div>
+                    <div>
+                        <h3 class="card-title">Merit Rank &amp; Percentile Engine</h3>
+                        <p class="card-desc">Choose how you want to provide or estimate your ACPC Merit Rank</p>
+                    </div>
+                </div>
+
+                <div class="mode-tabs">
+                    <button type="button" id="tab-manual" class="tab-btn active" onclick="setRankMode('manual')">
+                        🎯 Direct Merit Rank
+                    </button>
+                    <button type="button" id="tab-pr" class="tab-btn" onclick="setRankMode('pr')">
+                        📊 Calculate by Percentile (PR)
+                    </button>
+                    <button type="button" id="tab-marks" class="tab-btn" onclick="setRankMode('marks')">
+                        📝 Calculate by Theory Marks
+                    </button>
+                </div>
+
+                <!-- Mode 1: Manual Rank -->
+                <div id="manual-rank-section" class="tab-content">
+                    <div class="input-grid single">
+                        <div class="form-group">
+                            <label for="rank">ACPC Merit Rank <span class="required-star">*</span></label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">#</span>
+                                <input type="number" id="rank" placeholder="e.g. 6499" min="1" max="150000" oninput="onDirectRankInput()">
+                            </div>
+                            <span class="field-hint">Enter your official or expected general ACPC merit rank</span>
                         </div>
-                        <div class="multi-select-options" id="category-options">
-                            <label><input type="checkbox" class="category-cb" value="GEN" checked> <b>General (OPEN)</b></label>
-                            <label><input type="checkbox" class="category-cb" value="EWS"> EWS</label>
-                            <label><input type="checkbox" class="category-cb" value="SEBC"> SEBC</label>
-                            <label><input type="checkbox" class="category-cb" value="SC"> SC</label>
-                            <label><input type="checkbox" class="category-cb" value="ST"> ST</label>
-                            <label><input type="checkbox" class="category-cb" value="TFWS"> <b>TFWS</b></label>
+                    </div>
+                </div>
+
+                <!-- Mode 2: Calculate by PR -->
+                <div id="calc-pr-section" class="tab-content" style="display: none;">
+                    <div class="input-grid two-col">
+                        <div class="form-group">
+                            <label for="pcm-pr">Board PCM Percentile (50% Weight) <span class="required-star">*</span></label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">%</span>
+                                <input type="number" id="pcm-pr" step="0.01" min="0" max="100" placeholder="e.g. 85.50" oninput="calculateByPR()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="gujcet-pr">GUJCET Percentile (50% Weight) <span class="required-star">*</span></label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">%</span>
+                                <input type="number" id="gujcet-pr" step="0.01" min="0" max="100" placeholder="e.g. 90.20" oninput="calculateByPR()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode 3: Calculate by Marks -->
+                <div id="calc-marks-section" class="tab-content" style="display: none;">
+                    <div class="input-grid two-col">
+                        <div class="form-group">
+                            <label for="pcm-mark">PCM Theory Marks (Out of 300) <span class="required-star">*</span></label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">📝</span>
+                                <input type="number" id="pcm-mark" step="1" min="0" max="300" placeholder="e.g. 245" oninput="calculateByMarks()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="gujcet-mark">GUJCET Marks (Out of 120) <span class="required-star">*</span></label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">📐</span>
+                                <input type="number" id="gujcet-mark" step="0.25" min="0" max="120" placeholder="e.g. 95.50" oninput="calculateByMarks()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Rank & Merit Score Gauge (Visible for PR / Marks or after entry) -->
+                <div id="rank-analytics-box" class="rank-summary-card">
+                    <div class="rank-stat">
+                        <span class="stat-label">Projected Merit Rank</span>
+                        <div class="stat-value-group">
+                            <span class="stat-rank-number" id="calculated-rank-display">—</span>
+                        </div>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-stat">
+                        <span class="stat-label">Merit Percentile (50:50)</span>
+                        <span class="stat-pr-number" id="merit-pr-display">— %</span>
+                    </div>
+                    <div class="rank-divider"></div>
+                    <div class="rank-stat">
+                        <span class="stat-label">Distribution Breakdown</span>
+                        <span class="stat-detail" id="calc-breakdown-display">Enter rank or marks above</span>
+                    </div>
+                </div>
+
+                <div class="action-footer">
+                    <button id="search-btn" type="button" class="btn-primary" onclick="startLiveSearch()">
+                        <span class="btn-icon">🔍</span> Find Eligible Institutes &amp; Cutoffs
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: ADVANCED FILTERS & SEARCH -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="step-badge">STEP 2</div>
+                    <div>
+                        <h3 class="card-title">Intelligent Filters &amp; Preference Tuning</h3>
+                        <p class="card-desc">Narrow down by category, city, branches, quotas, and admission safety</p>
+                    </div>
+                </div>
+
+                <!-- Category Pills -->
+                <div class="filter-section-group">
+                    <label class="group-label">Candidate Category (Open &amp; Reserved are automatically cross-checked):</label>
+                    <div class="pill-group">
+                        <label class="pill-checkbox">
+                            <input type="checkbox" class="category-cb" value="GEN" checked>
+                            <span>🌟 General (OPEN)</span>
+                        </label>
+                        <label class="pill-checkbox">
+                            <input type="checkbox" class="category-cb" value="EWS">
+                            <span>💼 EWS</span>
+                        </label>
+                        <label class="pill-checkbox">
+                            <input type="checkbox" class="category-cb" value="SEBC">
+                            <span>📘 SEBC / OBC</span>
+                        </label>
+                        <label class="pill-checkbox">
+                            <input type="checkbox" class="category-cb" value="SC">
+                            <span>📗 SC</span>
+                        </label>
+                        <label class="pill-checkbox">
+                            <input type="checkbox" class="category-cb" value="ST">
+                            <span>📙 ST</span>
+                        </label>
+                        <label class="pill-checkbox">
+                            <input type="checkbox" class="category-cb" value="TFWS">
+                            <span>🎓 TFWS (Tuition Fee Waiver)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- City Tag Shortcuts -->
+                <div class="filter-section-group">
+                    <label class="group-label">Quick City Shortcuts:</label>
+                    <div class="city-chips">
+                        <button type="button" class="city-chip" onclick="setCityFilter('Ahmedabad')">Ahmedabad</button>
+                        <button type="button" class="city-chip" onclick="setCityFilter('Gandhinagar')">Gandhinagar</button>
+                        <button type="button" class="city-chip" onclick="setCityFilter('Surat')">Surat</button>
+                        <button type="button" class="city-chip" onclick="setCityFilter('Vadodara')">Vadodara</button>
+                        <button type="button" class="city-chip" onclick="setCityFilter('Rajkot')">Rajkot</button>
+                        <button type="button" class="city-chip" onclick="setCityFilter('Nagar')">V.V. Nagar / Anand</button>
+                        <button type="button" class="city-chip" onclick="setCityFilter('Bhavnagar')">Bhavnagar</button>
+                        <button type="button" class="city-chip" onclick="setCityFilter('Mehsana')">Mehsana</button>
+                        <button type="button" class="city-chip chip-clear" onclick="setCityFilter('')">Clear City</button>
+                    </div>
+                </div>
+
+                <div class="filter-grid">
+                    <!-- Specific Institute Dropdown -->
+                    <div class="form-group custom-dropdown" id="dropdown-inst">
+                        <label>Institute Name</label>
+                        <div class="dropdown-trigger" onclick="toggleDropdown('inst-options')">
+                            <span class="trigger-label" id="inst-label">All Institutes (127+)</span>
+                            <span class="arrow">▾</span>
+                        </div>
+                        <div class="dropdown-menu" id="inst-options">
+                            <div class="dropdown-search-box">
+                                <input type="text" placeholder="Search college..." oninput="filterDropdownList(this, 'inst-options')">
+                            </div>
+                            <div class="dropdown-actions">
+                                <button type="button" onclick="selectAllInDropdown('inst-cb', 'inst-label', 'All Institutes')">Select All</button>
+                                <button type="button" onclick="clearAllInDropdown('inst-cb', 'inst-label', 'Select Institutes')">Clear</button>
+                            </div>
+                            <div class="dropdown-list">
+                                <label class="dropdown-item"><input type="checkbox" class="inst-cb" value="ALL" checked> <b>— All Institutes —</b></label>
+                                {% for inst in institutes %}
+                                <label class="dropdown-item"><input type="checkbox" class="inst-cb" value="{{ inst }}"> {{ inst }}</label>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-group">
+                    <!-- Branches Dropdown -->
+                    <div class="form-group custom-dropdown" id="dropdown-branch">
+                        <label>Branch / Engineering Course</label>
+                        <div class="dropdown-trigger" onclick="toggleDropdown('branch-options')">
+                            <span class="trigger-label" id="branch-label">All Branches (126+)</span>
+                            <span class="arrow">▾</span>
+                        </div>
+                        <div class="dropdown-menu" id="branch-options">
+                            <div class="dropdown-search-box">
+                                <input type="text" placeholder="Search branch (e.g. Computer, IT, AI)..." oninput="filterDropdownList(this, 'branch-options')">
+                            </div>
+                            <div class="dropdown-actions">
+                                <button type="button" onclick="selectAllInDropdown('branch-cb', 'branch-label', 'All Branches')">Select All</button>
+                                <button type="button" onclick="clearAllInDropdown('branch-cb', 'branch-label', 'Select Branches')">Clear</button>
+                            </div>
+                            <div class="dropdown-list">
+                                <label class="dropdown-item"><input type="checkbox" class="branch-cb" value="ALL" checked> <b>— All Branches —</b></label>
+                                {% for b in branches %}
+                                <label class="dropdown-item"><input type="checkbox" class="branch-cb" value="{{ b }}"> {{ b }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Institute Type -->
+                    <div class="form-group custom-dropdown" id="dropdown-type">
+                        <label>Institute Type (Govt / SFI / GIA)</label>
+                        <div class="dropdown-trigger" onclick="toggleDropdown('type-options')">
+                            <span class="trigger-label" id="type-label">All Types</span>
+                            <span class="arrow">▾</span>
+                        </div>
+                        <div class="dropdown-menu" id="type-options">
+                            <div class="dropdown-list">
+                                <label class="dropdown-item"><input type="checkbox" class="type-cb" value="ALL" checked> <b>— All Types —</b></label>
+                                {% for type in inst_types %}
+                                <label class="dropdown-item"><input type="checkbox" class="type-cb" value="{{ type }}"> {{ type }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Board / Quota -->
+                    <div class="form-group custom-dropdown" id="dropdown-board">
                         <label>Board / Quota</label>
-                        <div class="multi-select-header" onclick="toggleDropdown('board-options')">
-                            Select Boards <span>▾</span>
+                        <div class="dropdown-trigger" onclick="toggleDropdown('board-options')">
+                            <span class="trigger-label" id="board-label">GUJCET &amp; All Boards</span>
+                            <span class="arrow">▾</span>
                         </div>
-                        <div class="multi-select-options" id="board-options">
-                            <label><input type="checkbox" class="board-cb" value="ALL"> <b>— All Boards —</b></label>
-                            {% for b in boards %}
-                            <label>
-                                <input type="checkbox" class="board-cb" value="{{ b }}" {% if b=='GUJCET Based' %}checked{% endif %}>
-                                {{ b }}
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Specific Institutes</label>
-                        <div class="multi-select-header" onclick="toggleDropdown('inst-options')">
-                            Select Institutes <span>▾</span>
-                        </div>
-                        <div class="multi-select-options" id="inst-options">
-                            <label><input type="checkbox" class="inst-cb" value="ALL" checked> <b>— All Institutes —</b></label>
-                            {% for inst in institutes %}
-                            <label><input type="checkbox" class="inst-cb" value="{{ inst }}"> {{ inst }}</label>
-                            {% endfor %}
+                        <div class="dropdown-menu" id="board-options">
+                            <div class="dropdown-list">
+                                <label class="dropdown-item"><input type="checkbox" class="board-cb" value="ALL"> <b>— All Boards —</b></label>
+                                {% for b in boards %}
+                                <label class="dropdown-item">
+                                    <input type="checkbox" class="board-cb" value="{{ b }}" {% if b=='GUJCET Based' %}checked{% endif %}>
+                                    {{ b }}
+                                </label>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
 
+                    <!-- City Input -->
                     <div class="form-group">
-                        <label>Institute Type</label>
-                        <div class="multi-select-header" onclick="toggleDropdown('type-options')">
-                            Select Types <span>▾</span>
-                        </div>
-                        <div class="multi-select-options" id="type-options">
-                            <label><input type="checkbox" class="type-cb" value="ALL" checked> <b>— All Types —</b></label>
-                            {% for type in inst_types %}
-                            <label><input type="checkbox" class="type-cb" value="{{ type }}"> {{ type }}</label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Branches</label>
-                        <div class="multi-select-header" onclick="toggleDropdown('branch-options')">
-                            Select Branches <span>▾</span>
-                        </div>
-                        <div class="multi-select-options" id="branch-options">
-                            <label><input type="checkbox" class="branch-cb" value="ALL" checked> <b>— All Branches —</b></label>
-                            {% for b in branches %}
-                            <label><input type="checkbox" class="branch-cb" value="{{ b }}"> {{ b }}</label>
-                            {% endfor %}
+                        <label for="city">City / Keyword Filter</label>
+                        <div class="input-with-icon">
+                            <span class="input-icon">📍</span>
+                            <input type="text" id="city" placeholder="e.g. Ahmedabad, Surat, Nadiad...">
                         </div>
                     </div>
 
+                    <!-- Admission Chance Filter -->
                     <div class="form-group">
-                        <label>City Keyword</label>
-                        <input type="text" id="city" placeholder="e.g. Ahmedabad, Surat">
+                        <label for="chance-filter">Admission Probability</label>
+                        <select id="chance-filter" class="custom-select">
+                            <option value="ALL">All Chances (Safe, Target, Dream)</option>
+                            <option value="SAFE">🟢 Safe Chances Only (&gt;90% Probability)</option>
+                            <option value="TARGET">🟡 Target Options (50-90% Probability)</option>
+                            <option value="DREAM">🔴 Dream / Ambitious Options</option>
+                        </select>
+                    </div>
+
+                    <!-- Sorting -->
+                    <div class="form-group">
+                        <label for="sort-by">Sort Results By</label>
+                        <select id="sort-by" class="custom-select">
+                            <option value="rank_asc">⚡ Closing Rank: Most Competitive First</option>
+                            <option value="rank_desc">🛡️ Closing Rank: Highest/Safest First</option>
+                            <option value="name_asc">🏛️ College Name: (A to Z)</option>
+                            <option value="course_asc">📚 Course Name: (A to Z)</option>
+                            <option value="trend">📈 Year Trend (Toughening First)</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
         </form>
 
-        <div id="results-container">
-            <div class="results-header">
-                <h3>🎉 Eligible Institutes Found</h3>
-                <span class="count-badge" id="count">0</span>
-            </div>
-            <div class="table-scroll-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Institute Name</th>
-                            <th>Course Name</th>
-                            <th>Type</th>
-                            <th>Board / Quota</th>
-                            <th>Category</th>
-                            <th>Closing Rank</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="results-table-body"></tbody>
-                </table>
+        <!-- FLOATING COMPARISON TRAY -->
+        <div id="comparison-tray" class="comparison-tray" style="display: none;">
+            <div class="tray-content">
+                <span class="tray-title">⚖️ Compare Colleges (<span id="compare-count">0</span>/3 selected)</span>
+                <div class="tray-actions">
+                    <button class="btn-compare" onclick="openComparisonModal()">Compare Now</button>
+                    <button class="btn-tray-clear" onclick="clearComparisonTray()">Clear</button>
+                </div>
             </div>
         </div>
 
-        <div id="preference-section">
-            <div class="pref-card">
-                <div id="pdf-content">
-                    <div class="pref-card-header">
-                        <h2>📋 My Choice Filling Priority List</h2>
-                        <p>Fill this exact order in the official ACPC portal.</p>
-                        <span class="student-rank-pill">
-                            🎯 Student Merit Rank: <span id="pdf-student-rank">—</span>
-                        </span>
-                    </div>
-                    <div class="pref-card-body">
-                        <div id="pref-scroll-container" class="table-scroll-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="text-align:center;">Pref No.</th>
-                                        <th>Institute Name</th>
-                                        <th>Course Name</th>
-                                        <th>Type</th>
-                                        <th>Category</th>
-                                        <th>Closing Rank</th>
-                                        <th class="hide-on-pdf">Manage</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pref-table-body"></tbody>
-                            </table>
-                        </div>
-                    </div>
+        <!-- RESULTS SECTION -->
+        <section id="results-container" class="results-section">
+            <div class="results-header-card">
+                <div class="results-title-group">
+                    <h3 class="results-title">🎉 Eligible Colleges &amp; Cutoffs</h3>
+                    <span class="count-badge" id="count">0 Eligible Options</span>
+                </div>
+                <div class="results-tools">
+                    <button class="btn-export-csv" onclick="exportSearchResultsCSV()" title="Export Search to CSV">
+                        📥 Export CSV
+                    </button>
                 </div>
             </div>
 
-            <button class="btn-pdf" onclick="downloadPDF()">📥 Download PDF</button>
-            <div style="clear:both;"></div>
-        </div>
+            <!-- Filter Status Bar -->
+            <div id="active-filter-bar" class="filter-status-bar">
+                <span>Showing matches for: </span>
+                <span id="active-rank-tag" class="filter-tag">Rank: —</span>
+                <span id="active-cat-tag" class="filter-tag">General</span>
+            </div>
 
+            <!-- Table Container -->
+            <div class="table-responsive">
+                <table class="pro-table">
+                    <thead>
+                        <tr>
+                            <th>Institute Name &amp; Type</th>
+                            <th>Engineering Branch</th>
+                            <th>Category</th>
+                            <th>2025 Closing</th>
+                            <th>2024 Cutoff &amp; Trend</th>
+                            <th>Chance Score</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <!-- Dynamic Results Rendered by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="pagination-bar" id="pagination-container" style="display: none;">
+                <div class="page-info">
+                    Showing <span id="page-start">1</span>-<span id="page-end">20</span> of <span id="page-total">0</span> colleges
+                </div>
+                <div class="page-controls">
+                    <button id="btn-prev-page" class="page-btn" onclick="changePage(-1)">← Previous</button>
+                    <span id="current-page-num" class="page-pill">Page 1</span>
+                    <button id="btn-next-page" class="page-btn" onclick="changePage(1)">Next →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3: CHOICE FILLING PRIORITY LIST BUILDER -->
+        <section id="preference-section" class="choice-list-section">
+            <div class="glass-card choice-card">
+                <div id="pdf-content">
+                    <div class="choice-header">
+                        <div class="choice-header-left">
+                            <div class="official-seal">ACPC</div>
+                            <div>
+                                <h2 class="choice-title">📋 ACPC Choice Filling Priority List</h2>
+                                <p class="choice-subtitle">Standard format for official Gujarat ACPC choice filling portal entry.</p>
+                            </div>
+                        </div>
+                        <div class="choice-header-right">
+                            <div class="rank-badge-box">
+                                <span class="badge-label">Student Merit Rank</span>
+                                <span class="badge-rank" id="pdf-student-rank">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Choice Balance Health Meter -->
+                    <div class="choice-audit-box hide-on-pdf">
+                        <div class="audit-header">
+                            <span class="audit-title">📊 Choice List Safety Health</span>
+                            <span class="audit-tag" id="audit-rating">Balanced Strategy</span>
+                        </div>
+                        <div class="audit-bar">
+                            <div class="bar-segment bar-dream" id="bar-dream" style="width: 30%;" title="Dream Choices"></div>
+                            <div class="bar-segment bar-target" id="bar-target" style="width: 40%;" title="Target Choices"></div>
+                            <div class="bar-segment bar-safe" id="bar-safe" style="width: 30%;" title="Safe Choices"></div>
+                        </div>
+                        <div class="audit-legend">
+                            <span><span class="dot dot-dream"></span> <span id="count-dream">0</span> Dream</span>
+                            <span><span class="dot dot-target"></span> <span id="count-target">0</span> Target</span>
+                            <span><span class="dot dot-safe"></span> <span id="count-safe">0</span> Safe</span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="pro-table choice-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center; width: 60px;">Pref #</th>
+                                    <th>Institute Name</th>
+                                    <th>Course / Branch</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th>2025 Closing</th>
+                                    <th class="hide-on-pdf" style="text-align: center; width: 140px;">Reorder &amp; Manage</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pref-table-body">
+                                <!-- Dynamic Choice List Rendered by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="choice-actions-bar hide-on-pdf">
+                    <div class="actions-left">
+                        <button class="btn-choice-tool btn-copy" onclick="copyChoicesToClipboard()" title="Copy list for ACPC Portal">
+                            📋 Copy Text for Portal
+                        </button>
+                        <button class="btn-choice-tool btn-csv" onclick="downloadChoicesCSV()" title="Export Choice List as CSV">
+                            📊 Export Excel/CSV
+                        </button>
+                        <button class="btn-choice-tool btn-clear-all" onclick="clearAllChoices()" title="Reset Choice List">
+                            🗑️ Reset Choices
+                        </button>
+                    </div>
+                    <div class="actions-right">
+                        <button class="btn-choice-primary" onclick="downloadPDF()">
+                            📥 Download Official PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SIDE-BY-SIDE COLLEGE COMPARISON MODAL -->
+    <div id="compare-modal" class="modal-backdrop" style="display: none;" onclick="closeModalOnBackdrop(event, 'compare-modal')">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <h3>⚖️ Side-by-Side College Comparison</h3>
+                <button class="modal-close" onclick="closeModal('compare-modal')">✕</button>
+            </div>
+            <div class="modal-body" id="compare-modal-body">
+                <!-- Comparison Grid Rendered by JS -->
+            </div>
+        </div>
     </div>
+
+    <!-- COLLEGE CATEGORY DETAILS MODAL -->
+    <div id="details-modal" class="modal-backdrop" style="display: none;" onclick="closeModalOnBackdrop(event, 'details-modal')">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div>
+                    <h3 id="details-modal-title">College Cutoff Breakdown</h3>
+                    <p id="details-modal-subtitle" class="modal-subtitle"></p>
+                </div>
+                <button class="modal-close" onclick="closeModal('details-modal')">✕</button>
+            </div>
+            <div class="modal-body" id="details-modal-body">
+                <!-- Category Cutoffs Rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>🎓 <strong>ACPC Choice Filling &amp; Merit Predictor Pro</strong> — Gujarat Engineering Admission 2025-26</p>
+            <p class="disclaimer">Disclaimer: Cutoff predictions and percentiles are calculated based on historical ACPC seat allotment trends. Official seat allotment is subject to ACPC Gujarat guidelines.</p>
+        </div>
+    </footer>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>

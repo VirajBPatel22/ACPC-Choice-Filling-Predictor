@@ -1,67 +1,158 @@
 import os
-from flask import Flask, request, jsonify, render_template
-import pandas as pd
-from data_processor import load_and_clean_data, predict_colleges, pcm_24_mapping, pcm_25_mapping, gujcet_24_mapping, gujcet_25_mapping, get_closest_pr
- 
+import logging
+from typing import Dict, Any
+from flask import Flask, request, jsonify, render_template, Response
+from flask.views import MethodView
 
-app = Flask(__name__)
-data_24, data_25 = load_and_clean_data()
+from models.schemas import PredictionFilter
+from services.data_engine import ACPCDataEngine
+from services.rank_calculator import RankCalculator
+from services.predictor import CollegePredictor
 
-@app.route('/')
-def home():
-    if data_25 is not None:
-        boards = sorted([b for b in data_25['Board'].unique() if str(b).lower() != 'nan'])
-        inst_types = sorted([t for t in data_25['Inst_Type'].unique() if str(t).lower() != 'nan'])
-        branches = sorted([c for c in data_25['Course_name'].unique() if str(c).lower() != 'nan'])
-        institutes = sorted([i for i in data_25['Inst_Name'].unique() if str(i).lower() != 'nan'])
-    else:
-        boards, inst_types, branches, institutes = [], [], [], []
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger("acpc_app")
 
-    return render_template('index.html', boards=boards, inst_types=inst_types, branches=branches, institutes=institutes)
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    if data_25 is None:
-        return jsonify({"error": "Database not loaded properly."})
+def create_app() -> Flask:
+    """Application factory for ACPC Choice Filling Predictor."""
+    app = Flask(__name__)
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "acpc-predictor-secret-key-2025")
+    app.config["JSON_SORT_KEYS"] = False
 
-    data = request.get_json()
-    student_rank = float(data.get('rank', 0)) if data.get('rank') else 0
-    categories = data.get('category', ['GEN'])  
-    
-    boards = data.get('board', ['ALL'])
-    inst_types = data.get('inst_type', ['ALL'])
-    branches = data.get('branch', ['ALL'])
-    inst_names = data.get('inst_name', ['ALL'])
-    city = data.get('city', '')
+    # Initialize Singleton Data Engine & Services
+    data_engine = ACPCDataEngine.get_instance()
+    rank_calculator = RankCalculator()
+    predictor = CollegePredictor(data_engine)
 
-    results = predict_colleges(data_25, student_rank, categories, boards, inst_types, branches, inst_names, city)
-    
-    colleges = results.to_dict(orient='records')
-    return jsonify(colleges)
-@app.route('/calculate_rank', methods=['POST'])
-def calc_rank_api():
-    data = request.get_json()
-    pcm_mark = float(data.get('pcm', 0))
-    gujcet_mark = float(data.get('gujcet', 0))
-    pcm_pr_24 = get_closest_pr(pcm_24_mapping, pcm_mark)
-    pcm_pr_25 = get_closest_pr(pcm_25_mapping, pcm_mark)
-    avg_pcm_pr = (pcm_pr_24 + pcm_pr_25) / 2 if (pcm_pr_24 and pcm_pr_25) else (pcm_pr_24 or pcm_pr_25)
-    gujcet_pr_24 = get_closest_pr(gujcet_24_mapping, gujcet_mark)
-    gujcet_pr_25 = get_closest_pr(gujcet_25_mapping, gujcet_mark)
-    avg_gujcet_pr = (gujcet_pr_24 + gujcet_pr_25) / 2 if (gujcet_pr_24 and gujcet_pr_25) else (gujcet_pr_24 or gujcet_pr_25)
-    if avg_pcm_pr > 0 and avg_gujcet_pr > 0:
-        merit_pr = (avg_pcm_pr * 0.5) + (avg_gujcet_pr * 0.5)
-        est_rank = int(round((100 - merit_pr) * 400))
-        if est_rank < 1: 
-            est_rank = 1
-            
-        return jsonify({
-            'rank': est_rank, 
-            'pcm_pr': round(avg_pcm_pr, 4), 
-            'gujcet_pr': round(avg_gujcet_pr, 4)
-        })
-    return jsonify({'rank': 0})
+    # -------------------------------------------------------------
+    # Class-Based Views (MethodViews)
+    # -------------------------------------------------------------
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    class HomeView(MethodView):
+        """Renders the main choice filling predictor dashboard."""
+
+        def get(self) -> str:
+            filter_options = data_engine.get_filter_options()
+            stats = data_engine.stats.to_dict() if data_engine.stats else {}
+            return render_template(
+                "index.html",
+                boards=filter_options.get("boards", []),
+                inst_types=filter_options.get("inst_types", []),
+                branches=filter_options.get("branches", []),
+                institutes=filter_options.get("institutes", []),
+                stats=stats,
+            )
+
+    class PredictAPI(MethodView):
+        """API endpoint for calculating eligible colleges & probabilities."""
+
+        def post(self) -> Response:
+            try:
+                payload = request.get_json(silent=True) or {}
+                filters = PredictionFilter.from_dict(payload)
+                colleges = predictor.predict(filters)
+                return jsonify({
+                    "success": True,
+                    "count": len(colleges),
+                    "student_rank": filters.rank,
+                    "data": colleges,
+                })
+            except Exception as e:
+                logger.error(f"Error executing prediction query: {e}", exc_info=True)
+                return jsonify({"success": False, "error": str(e), "data": []}), 500
+
+    class RankCalculatorAPI(MethodView):
+        """API endpoint for calculating merit percentile and estimated rank."""
+
+        def post(self) -> Response:
+            try:
+                payload = request.get_json(silent=True) or {}
+                calc_mode = payload.get("mode", "marks")
+
+                if calc_mode == "percentile":
+                    pcm_pr = float(payload.get("pcm_pr", 0) or 0)
+                    gujcet_pr = float(payload.get("gujcet_pr", 0) or 0)
+                    result = rank_calculator.calculate_by_percentile(pcm_pr, gujcet_pr)
+                else:
+                    pcm_mark = float(payload.get("pcm", 0) or payload.get("pcm_mark", 0) or 0)
+                    gujcet_mark = float(payload.get("gujcet", 0) or payload.get("gujcet_mark", 0) or 0)
+                    result = rank_calculator.calculate_by_marks(pcm_mark, gujcet_mark)
+
+                return jsonify({
+                    "success": True,
+                    "rank": result.rank,
+                    "pcm_pr": result.pcm_pr,
+                    "gujcet_pr": result.gujcet_pr,
+                    "merit_pr": result.merit_pr,
+                    "source": result.source,
+                })
+            except Exception as e:
+                logger.error(f"Error in rank calculator: {e}", exc_info=True)
+                return jsonify({"success": False, "error": str(e), "rank": 0}), 500
+
+    class CollegeDetailsAPI(MethodView):
+        """API endpoint for fetching category-wise cutoffs for a college branch."""
+
+        def post(self) -> Response:
+            try:
+                payload = request.get_json(silent=True) or {}
+                inst_name = str(payload.get("inst_name", "")).strip()
+                course_name = str(payload.get("course_name", "")).strip()
+
+                if not inst_name or not course_name:
+                    return jsonify({"success": False, "error": "Institute and Course name required", "data": []}), 400
+
+                records = data_engine.get_college_details(inst_name, course_name)
+                return jsonify({
+                    "success": True,
+                    "inst_name": inst_name,
+                    "course_name": course_name,
+                    "count": len(records),
+                    "data": records,
+                })
+            except Exception as e:
+                logger.error(f"Error fetching college details: {e}", exc_info=True)
+                return jsonify({"success": False, "error": str(e), "data": []}), 500
+
+    class PlatformStatsAPI(MethodView):
+        """API endpoint for platform database statistics."""
+
+        def get(self) -> Response:
+            stats = data_engine.stats.to_dict() if data_engine.stats else {}
+            return jsonify({"success": True, "stats": stats})
+
+    # -------------------------------------------------------------
+    # Route Registrations (Class-Based)
+    # -------------------------------------------------------------
+    app.add_url_rule("/", view_func=HomeView.as_view("home_view"))
+    app.add_url_rule("/predict", view_func=PredictAPI.as_view("predict_api"))
+    app.add_url_rule("/api/predict", view_func=PredictAPI.as_view("api_predict"))
+    app.add_url_rule("/calculate_rank", view_func=RankCalculatorAPI.as_view("rank_calculator_api"))
+    app.add_url_rule("/api/calculate_rank", view_func=RankCalculatorAPI.as_view("api_rank_calculator"))
+    app.add_url_rule("/api/college_details", view_func=CollegeDetailsAPI.as_view("college_details_api"))
+    app.add_url_rule("/api/stats", view_func=PlatformStatsAPI.as_view("platform_stats_api"))
+
+    # Global Error Handlers
+    @app.errorhandler(404)
+    def not_found_handler(e):
+        if request.path.startswith("/api/"):
+            return jsonify({"success": False, "error": "Endpoint not found"}), 404
+        return render_template("index.html"), 404
+
+    @app.errorhandler(500)
+    def server_error_handler(e):
+        return jsonify({"success": False, "error": "Internal server error"}), 500
+
+    return app
+
+
+# Root application instance for WSGI servers (Gunicorn / Render)
+app = create_app()
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
