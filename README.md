@@ -1,62 +1,49 @@
-# 🎓 Advanced ACPC Merit Rank Predictor & Choice Filling Engine
+# 🎓 ACPC Choice Filling & Merit Predictor Pro
 
-![Project Status](https://img.shields.io/badge/Status-Completed-success)
-![Platform](https://img.shields.io/badge/Platform-Web-blue)
-![Tech Stack](https://img.shields.io/badge/Tech-Python_|_Flask_|_JS-yellow)
+![Project Status](https://img.shields.io/badge/Status-Production%20Ready-success)
+![Architecture](https://img.shields.io/badge/Architecture-Enterprise%20OOP%20Class--Based-blue)
+![Tech Stack](https://img.shields.io/badge/Tech-Python%20%7C%20Flask%20%7C%20Pandas%20%7C%20JS-yellow)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-## 📌 Overview
-The **Advanced ACPC Merit Rank Predictor** is a full-stack web application designed to help engineering aspirants in Gujarat make data-driven admission decisions. It accurately predicts a student's ACPC merit rank based on historical cutoff data and allows them to build, manage, and export a personalized Choice Filling Priority List for the official ACPC admission portal.
-
-## 🚀 Key Features
-
-### 1. 3-Way Rank Entry Mode
-* **I Know My Rank:** Direct entry for students who already have their official ACPC rank.
-* **Calculate by PR:** Enter Board (PCM) and GUJCET Percentiles to estimate the rank.
-* **Calculate by Marks:** Enter raw PCM and GUJCET marks. The Python backend maps these marks to accurate PRs using dual-year historical data (2024 & 2025) and calculates a highly accurate estimated rank using the official ACPC formula (50% Board + 50% GUJCET).
-
-### 2. Smart College Predictor & Filters
-Real-time, asynchronous filtering of thousands of college records across Gujarat. Users can filter by:
-* **Category:** General (OPEN), EWS, SEBC, SC, ST, and TFWS.
-* **Institute Type:** Government (GOVT), Grant-in-Aid (GIA), Self-Finance.
-* **Specific Branches & Boards** (GUJCET Based / JEE Based).
-* **City Keyword Search** (e.g., Ahmedabad, Surat).
-
-### 3. Interactive Choice Filling Builder
-* **Add to List:** Instantly add eligible colleges to a "Priority List".
-* **Auto-Sorting:** Colleges are automatically sorted by their closing ranks.
-* **Manage Preferences:** Reorder colleges using ⬆️ (Up) and ⬇️ (Down) buttons or ❌ Delete them to perfect the strategy.
-
-### 4. One-Click PDF Export
-* Generates a clean, professional PDF of the final priority list using `html2pdf.js`.
-* Automatically tags the PDF file name and header with the student's predicted rank (e.g., `ACPC_Choice_Filling_Rank_4000.pdf`).
+An enterprise-grade, data-driven web application for Gujarat engineering aspirants. Built with an **Object-Oriented (Class-Based) Python backend** and a modern SaaS interface to predict ACPC merit ranks, evaluate admission probabilities, analyze cutoff trends (2024 vs 2025), and generate official Choice Filling Priority Lists.
 
 ---
 
-## 📸 Screenshots
+## 🚀 Key Features
 
-### Rank Entry & Prediction Mode
-> *Allows users to calculate rank via Marks, PR, or manual entry.*
-<!-- ADD YOUR SCREENSHOT HERE (Rank Entry Box Image) -->
-![Rank Entry Mode](images/Predict_Via_Rank.png)
+### 1. 3-Way Merit Rank & Percentile Engine
+* **Direct Merit Rank:** Instant lookup for students with an official ACPC merit rank.
+* **Calculate by Percentile (PR):** Calculates estimated merit rank using the official ACPC 50:50 formula (50% Board PCM PR + 50% GUJCET PR).
+* **Calculate by Theory Marks:** Converts raw PCM (/300) and GUJCET (/120) marks into percentiles using historical ACPC distributions and estimates projected rank.
 
-### Advanced Filters & Real-Time Search
-> *Live updating table fetching data based on user criteria.*
-<!-- ADD YOUR SCREENSHOT HERE (Filters and Search Results Image) -->
-![Search and Filters](images/live_changing.png)
+### 2. Intelligent College Predictor & Probability Engine
+* **Admission Chance Scoring:** Automatically classifies colleges into:
+  * 🟢 **SAFE (>90% Probability):** Closing Rank $\ge 1.25 \times$ Merit Rank.
+  * 🟡 **TARGET (50-90% Probability):** Closing Rank between $1.0\times$ and $1.25\times$ Merit Rank.
+  * 🔴 **DREAM (<50% Probability):** Ambitious reach options.
+* **Year-Over-Year Cutoff Trends:** Cross-references 2024 vs 2025 cutoffs with indicators ($\uparrow$ Tougher, $\downarrow$ Easier, Stable, New).
+* **Smart Multi-Filters:** Category (OPEN, EWS, SEBC, SC, ST, TFWS), Institute Type (Govt, GIA, SFI), Branch (126+ courses), Board (GUJCET/JEE), and City Tag shortcuts.
 
-### Priority List Builder & PDF Export
-> *Users can sort their preferences and download them for the official portal.*
-<!-- ADD YOUR SCREENSHOT HERE (Priority List and PDF Button Image) -->
-![Choice Filling List](images/Arrange_List.png)
+### 3. Priority List Builder & Export Suite
+* **Interactive Management:** Reorder preferences (Move Up, Move Down, Top, Bottom) or remove choices.
+* **Choice Balance Health Audit:** Visual gauge analyzing your list balance across Safe, Target, and Dream choices.
+* **Official PDF Export:** One-click print-ready A4 landscape PDF document with student rank and timestamp.
+* **CSV / Excel Download:** Export choice lists and search results into spreadsheet format.
+* **Copy for ACPC Portal:** Formatted text ready to paste directly into the official portal.
+* **LocalStorage Auto-Save:** Ensures choices are never lost on page refresh.
+
+### 4. Side-by-Side Comparison & Category Cutoff Breakdown
+* **Comparison Matrix:** Compare up to 3 colleges side-by-side.
+* **Category Details Modal:** View all category cutoffs for any engineering branch.
 
 ---
 
 ## 🛠️ Technology Stack
 
-* **Backend:** Python, Flask, Pandas
-* **Frontend:** HTML5, CSS3, Vanilla JavaScript, Fetch API
-* **Libraries:** `html2pdf.js` (for PDF generation)
-* **Database:** Historical ACPC Cutoff CSV Data (2024-25 & 2025-26)
+* **Backend:** Python 3.10+, Flask, Pandas, Gunicorn (Class-Based Architecture)
+* **Design Patterns:** Service Layer, Data Engine Singleton, MethodViews, Typed Dataclasses
+* **Frontend:** HTML5, Modern CSS (Dark/Light Mode), Vanilla JavaScript (ES6+), `html2pdf.js`
+* **Data Sources:** ACPC Gujarat Cutoff Datasets (2024-25 & 2025-26)
 
 ---
 
@@ -64,37 +51,75 @@ Real-time, asynchronous filtering of thousands of college records across Gujarat
 
 ```text
 ACPC-Choice-Filling-Predictor/
- │
- │-- app.py                  # Main Flask Server & API Routes
- │-- data_processor.py       # Data cleaning, mapping, and algorithm logic
- │-- pcm.csv                 # Historical PCM Marks vs PR data
- │-- gujcet.csv              # Historical GUJCET Marks vs PR data
- │-- data_2024.csv           # 2024 College Cutoff Data
- │-- data_2025.csv           # 2025 College Cutoff Data
- │
- │-- templates/
- │   └── index.html          # Main UI Layout
- │
- └── static/
-     │-- style.css           # UI Styling and Layouts
-     └── script.js           # Frontend logic (Calculations, PDF, Search)
+├── app.py                      # Flask Application & Class-Based MethodViews
+├── data_processor.py           # Facade & Compatibility Layer
+│
+├── models/                     # Data Models & Schemas
+│   ├── __init__.py
+│   └── schemas.py              # Typed Dataclasses
+│
+├── services/                   # Business Logic & OOP Services
+│   ├── __init__.py
+│   ├── data_engine.py          # ACPCDataEngine (Singleton Ingestion & Merging)
+│   ├── predictor.py            # CollegePredictor (Filtering & Chance Scoring)
+│   └── rank_calculator.py      # RankCalculator (Percentile & 50:50 Formulas)
+│
+├── templates/
+│   └── index.html              # Modern Dashboard UI
+│
+├── static/
+│   ├── style.css               # Design System (Dark/Light Themes)
+│   └── script.js               # Client-Side Controller & State Engine
+│
+├── data_2024.csv               # 2024 ACPC Cutoff Dataset
+├── data_2025.csv               # 2025 ACPC Cutoff Dataset
+├── pcm_24.csv                  # 2024 Board PCM Marks-to-PR
+├── pcm_25.csv                  # 2025 Board PCM Marks-to-PR
+├── gujcet_24.csv               # 2024 GUJCET Marks-to-PR
+├── gujcet_25.csv               # 2025 GUJCET Marks-to-PR
+│
+├── requirements.txt            # Python Dependencies
+├── Procfile                    # Deployment Entrypoint
+├── render.yaml                 # Render Cloud Configuration
+└── README.md                   # Project Documentation
+```
 
---------------------------------------------------------------------------------
-⚙️ Installation & How to Run Locally
-Follow these steps to run the project on your local machine:
-1. Clone the repository:
-git clone https://github.com/your-username/ACPC-Choice-Filling-Predictor.git
-cd ACPC-Choice-Filling-Predictor
-2. Install required Python packages: Make sure you have Python installed, then run:
-pip install flask pandas
-3. Start the Flask Server:
-python app.py
-4. Open in Browser: Open your web browser and navigate to:
-http://127.0.0.1:5001
+---
 
---------------------------------------------------------------------------------
-💡 About the Data
-The prediction engine utilizes official closing rank data and marks-to-percentile mapping data from the Admission Committee for Professional Courses (ACPC), Gujarat. The algorithm averages historical data to provide a highly realistic estimation for upcoming admission cycles.
+## ⚙️ Quick Start (Local Setup)
 
---------------------------------------------------------------------------------
-Developed with ❤️ to help Gujarat Engineering Aspirants.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/VirajBPatel22/ACPC-Choice-Filling-Predictor.git
+   cd ACPC-Choice-Filling-Predictor
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run the server:**
+   ```bash
+   python app.py
+   ```
+
+4. **Access in browser:**
+   ```text
+   http://127.0.0.1:5001
+   ```
+
+---
+
+## 🌐 Deploy to Cloud (Free & Easy)
+
+### Deploy on Render.com
+1. Go to [render.com](https://render.com/) and connect your GitHub repository.
+2. Select **Web Service** $\rightarrow$ Runtime: **Python 3**.
+3. Build Command: `pip install -r requirements.txt`
+4. Start Command: `gunicorn app:app`
+5. Click **Deploy Web Service**!
+
+---
+
+Developed with ❤️ for Gujarat Engineering Aspirants.
