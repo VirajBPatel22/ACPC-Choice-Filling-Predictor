@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACPC Choice Filling Predictor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="page-header">
+            <h2>🎓 ACPC <span class="accent">Choice Filling</span> Predictor</h2>
+            <p>Find eligible institutes based on your merit rank &amp; build your priority list</p>
+        </div>
+
+        <form id="prediction-form" onsubmit="event.preventDefault();">
+
+            <div class="card">
+                <div class="card-title">① Rank Entry Mode</div>
+
+                <div class="mode-toggle">
+                    <button type="button" id="btn-know-rank" class="mode-btn active" onclick="setRankMode('manual')">I Know My Rank</button>
+                    <button type="button" id="btn-calc-pr"   class="mode-btn" onclick="setRankMode('pr')">Calculate by PR</button>
+                    <button type="button" id="btn-calc-marks" class="mode-btn" onclick="setRankMode('marks')">Calculate by Marks</button>
+                </div>
+
+                <div id="manual-rank-section">
+                    <div class="form-group">
+                        <label>ACPC Merit Rank *</label>
+                        <input type="number" id="rank" placeholder="e.g. 6499" required>
+                    </div>
+                </div>
+
+                <div id="calc-pr-section" style="display:none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Board PCM Percentile (PR) *</label>
+                            <input type="number" id="pcm-pr" step="0.01" placeholder="e.g. 85.50" oninput="calculateByPR()">
+                        </div>
+                        <div class="form-group">
+                            <label>GUJCET Percentile (PR) *</label>
+                            <input type="number" id="gujcet-pr" step="0.01" placeholder="e.g. 90.20" oninput="calculateByPR()">
+                        </div>
+                    </div>
+                    <div class="rank-result-box">
+                        <span class="label">🎯 Estimated Merit Rank</span>
+                        <span class="rank-num" id="calculated-rank-display-pr">—</span>
+                    </div>
+                </div>
+
+                <div id="calc-marks-section" style="display:none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>PCM Theory Marks (Out of 300) *</label>
+                            <input type="number" id="pcm-mark" step="1" placeholder="e.g. 250" oninput="calculateByMarks()">
+                        </div>
+                        <div class="form-group">
+                            <label>GUJCET Marks (Out of 120) *</label>
+                            <input type="number" id="gujcet-mark" step="0.25" placeholder="e.g. 95" oninput="calculateByMarks()">
+                        </div>
+                    </div>
+                    <div class="rank-result-box">
+                        <span class="label">🎯 Estimated Merit Rank</span>
+                        <span class="rank-num" id="calculated-rank-display-marks">—</span>
+                        <span class="sub-info" id="pr-display-marks">Enter marks to fetch exact PR</span>
+                    </div>
+                </div>
+
+                <button id="search-btn" type="button" class="btn-primary" onclick="startLiveSearch()">
+                    🔍 Find Eligible Institutes
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">② Advanced Filters</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <div class="multi-select-header" onclick="toggleDropdown('category-options')">
+                            Select Categories <span>▾</span>
+                        </div>
+                        <div class="multi-select-options" id="category-options">
+                            <label><input type="checkbox" class="category-cb" value="GEN" checked> <b>General (OPEN)</b></label>
+                            <label><input type="checkbox" class="category-cb" value="EWS"> EWS</label>
+                            <label><input type="checkbox" class="category-cb" value="SEBC"> SEBC</label>
+                            <label><input type="checkbox" class="category-cb" value="SC"> SC</label>
+                            <label><input type="checkbox" class="category-cb" value="ST"> ST</label>
+                            <label><input type="checkbox" class="category-cb" value="TFWS"> <b>TFWS</b></label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Board / Quota</label>
+                        <div class="multi-select-header" onclick="toggleDropdown('board-options')">
+                            Select Boards <span>▾</span>
+                        </div>
+                        <div class="multi-select-options" id="board-options">
+                            <label><input type="checkbox" class="board-cb" value="ALL"> <b>— All Boards —</b></label>
+                            {% for b in boards %}
+                            <label>
+                                <input type="checkbox" class="board-cb" value="{{ b }}" {% if b=='GUJCET Based' %}checked{% endif %}>
+                                {{ b }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Specific Institutes</label>
+                        <div class="multi-select-header" onclick="toggleDropdown('inst-options')">
+                            Select Institutes <span>▾</span>
+                        </div>
+                        <div class="multi-select-options" id="inst-options">
+                            <label><input type="checkbox" class="inst-cb" value="ALL" checked> <b>— All Institutes —</b></label>
+                            {% for inst in institutes %}
+                            <label><input type="checkbox" class="inst-cb" value="{{ inst }}"> {{ inst }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Institute Type</label>
+                        <div class="multi-select-header" onclick="toggleDropdown('type-options')">
+                            Select Types <span>▾</span>
+                        </div>
+                        <div class="multi-select-options" id="type-options">
+                            <label><input type="checkbox" class="type-cb" value="ALL" checked> <b>— All Types —</b></label>
+                            {% for type in inst_types %}
+                            <label><input type="checkbox" class="type-cb" value="{{ type }}"> {{ type }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Branches</label>
+                        <div class="multi-select-header" onclick="toggleDropdown('branch-options')">
+                            Select Branches <span>▾</span>
+                        </div>
+                        <div class="multi-select-options" id="branch-options">
+                            <label><input type="checkbox" class="branch-cb" value="ALL" checked> <b>— All Branches —</b></label>
+                            {% for b in branches %}
+                            <label><input type="checkbox" class="branch-cb" value="{{ b }}"> {{ b }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>City Keyword</label>
+                        <input type="text" id="city" placeholder="e.g. Ahmedabad, Surat">
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+        <div id="results-container">
+            <div class="results-header">
+                <h3>🎉 Eligible Institutes Found</h3>
+                <span class="count-badge" id="count">0</span>
+            </div>
+            <div class="table-scroll-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Institute Name</th>
+                            <th>Course Name</th>
+                            <th>Type</th>
+                            <th>Board / Quota</th>
+                            <th>Category</th>
+                            <th>Closing Rank</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="preference-section">
+            <div class="pref-card">
+                <div id="pdf-content">
+                    <div class="pref-card-header">
+                        <h2>📋 My Choice Filling Priority List</h2>
+                        <p>Fill this exact order in the official ACPC portal.</p>
+                        <span class="student-rank-pill">
+                            🎯 Student Merit Rank: <span id="pdf-student-rank">—</span>
+                        </span>
+                    </div>
+                    <div class="pref-card-body">
+                        <div id="pref-scroll-container" class="table-scroll-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:center;">Pref No.</th>
+                                        <th>Institute Name</th>
+                                        <th>Course Name</th>
+                                        <th>Type</th>
+                                        <th>Category</th>
+                                        <th>Closing Rank</th>
+                                        <th class="hide-on-pdf">Manage</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pref-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-pdf" onclick="downloadPDF()">📥 Download PDF</button>
+            <div style="clear:both;"></div>
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
