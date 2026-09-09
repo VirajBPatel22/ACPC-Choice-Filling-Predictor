@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, render_template
 import pandas as pd
 from data_processor import load_and_clean_data, predict_colleges, pcm_24_mapping, pcm_25_mapping, gujcet_24_mapping, gujcet_25_mapping, get_closest_pr
@@ -62,4 +63,5 @@ def calc_rank_api():
     return jsonify({'rank': 0})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

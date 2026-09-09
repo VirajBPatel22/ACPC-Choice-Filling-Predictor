@@ -1,7 +1,5 @@
 import pandas as pd
 
-import pandas as pd
-
 def load_and_clean_data():
     try:
         data_24 = pd.read_csv('data_2024.csv')
@@ -87,7 +85,6 @@ def predict_colleges(data, student_rank, categories=None, boards=None, inst_type
         
     eligible = filtered[filtered['Closing_Rank'] >= student_rank]
     eligible = eligible.sort_values(by='Closing_Rank')
-    
     return eligible[['Inst_Name', 'Course_name', 'Inst_Type', 'Board', 'Category', 'Closing_Rank']]
 
 def load_marks_mapping(filepath):
