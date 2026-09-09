@@ -1,9 +1,11 @@
 # 🎓 ACPC Choice Filling & Merit Predictor Pro
 
+[![Live Demo](https://img.shields.io/badge/Live%20Website-acpc--choice--filling--predictor.onrender.com-brightgreen?style=for-the-badge&logo=render)](https://acpc-choice-filling-predictor.onrender.com)
 ![Project Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 ![Architecture](https://img.shields.io/badge/Architecture-Enterprise%20OOP%20Class--Based-blue)
 ![Tech Stack](https://img.shields.io/badge/Tech-Python%20%7C%20Flask%20%7C%20Pandas%20%7C%20JS-yellow)
-![License](https://img.shields.io/badge/License-MIT-green)
+
+🌐 **Live Application:** [https://acpc-choice-filling-predictor.onrender.com](https://acpc-choice-filling-predictor.onrender.com)
 
 An enterprise-grade, data-driven web application for Gujarat engineering aspirants. Built with an **Object-Oriented (Class-Based) Python backend** and a modern SaaS interface to predict ACPC merit ranks, evaluate admission probabilities, analyze cutoff trends (2024 vs 2025), and generate official Choice Filling Priority Lists.
 
